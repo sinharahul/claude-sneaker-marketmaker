@@ -1,0 +1,66 @@
+# Sneaker Market Maker — default configuration.
+# Headless / config-driven per PRD §6 (no manual trading UI in Phase 1).
+# All economic assumptions live here so the engine stays parameter-free.
+
+[run]
+steps         = 500     # simulated ticks to run in paper mode
+tick_hours    = 1.0     # wall-clock hours represented by one tick
+seed          = 7       # RNG seed for reproducible paper runs
+starting_cash = 50000.0 # deployed bankroll; drawdown is measured against this, not peak-from-zero
+
+[pricing]
+# Avellaneda–Stoikov quoting parameters (see smm/engine/pricing.py).
+gamma          = 0.0025   # inventory risk-aversion  γ  (1/$).  Higher => more skew.
+kappa          = 0.06     # fill-intensity decay      κ  (1/$).  Higher => tighter optimal spread.
+horizon_days   = 11.0     # planning horizon (T-t), aligned to the <11d turnover KPI.
+min_half_pct   = 0.02     # floor on half-spread as a fraction of mid (never quote inside this).
+capacity_widen = 1.5      # extra spread multiplier applied at full inventory utilisation (FR-2.1).
+
+[fills]
+# Fill-intensity model  λ(δ) = A · exp(-κ·δ), used by the paper executor to
+# decide whether a resting quote gets hit within a tick.
+base_intensity = 4.0      # A: baseline arrival rate (per day) of a marketable counter-order at δ=0.
+
+[fees]
+# All-in platform economics. StockX/GOAT run ~9–12% once seller + payment +
+# shipping are included; this is what makes the ≥8% net-spread KPI hard.
+sell_fee_pct   = 0.105    # taken on every sale (ask fill or hedge liquidation).
+buy_fee_pct    = 0.03     # processing on the buy side.
+instant_payout_penalty = 0.06  # haircut vs. best bid for GOAT-style instant cash-out (FR-3.2).
+
+[risk]
+# Non-functional guardrails (PRD §5).
+max_inventory_per_sku = 20     # hard structural cap per SKU/size.
+vol_breaker_sigma     = 3.0    # halt bids when short-window vol ≥ N× baseline (restock spike).
+vol_breaker_window    = 15     # rolling window (ticks) for the breaker's short-vol estimate.
+max_drawdown_halt_pct = 0.05   # kill-switch: stop quoting if equity draws down past this.
+
+[hedging]
+# Depreciation-vs-carry policy (FR-3.1 / FR-3.2).
+daily_decay_pct  = 0.004   # expected mid-price depreciation per day since drop (asset decay).
+hedge_soft_ratio = 0.75    # begin proactive hedging above this fraction of capacity.
+
+[[universe]]
+# Each entry is one SKU/size the maker quotes. `mid` seeds the synthetic feed.
+model = "Jordan 4 Retro Bred"
+size  = "10"
+mid   = 320.0
+sigma = 0.030            # per-day fractional volatility of this SKU.
+
+[[universe]]
+model = "Yeezy 350 Zebra"
+size  = "9.5"
+mid   = 240.0
+sigma = 0.045
+
+[[universe]]
+model = "Dunk Low Panda"
+size  = "11"
+mid   = 130.0
+sigma = 0.055
+
+[[universe]]
+model = "New Balance 550 White Green"
+size  = "10.5"
+mid   = 110.0
+sigma = 0.025

@@ -1,0 +1,19 @@
+[project]
+name = "sneaker-market-maker"
+version = "0.2.0"
+description = "Algorithmic market maker for the sneaker resale secondary market (Avellaneda–Stoikov core)"
+requires-python = ">=3.11"
+# Intentionally zero runtime dependencies: the Phase-2 skeleton runs on the
+# stdlib alone (tomllib, dataclasses, statistics, random) so it is trivially
+# reproducible. Swap the pure-Python numerics for numpy/numba when profiling
+# says the per-SKU loop is the bottleneck (see README "Scaling").
+
+[project.scripts]
+smm = "smm.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["smm*"]
