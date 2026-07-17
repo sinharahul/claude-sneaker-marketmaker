@@ -8,6 +8,9 @@ execution. **Phase 3** ([`phase3/`](phase3/)) adds a replay backtester,
 fill-intensity calibration, and a cross-platform arbitrage signal on top —
 without changing any Phase-2 code.
 
+📄 **Docs:** [Product Requirements (PRD)](docs/PRD.md) ·
+[Technical Design Document](docs/TECHNICAL_DESIGN.md)
+
 Zero third-party dependencies — pure Python 3.11 stdlib (`tomllib`, `dataclasses`,
 `statistics`, `random`). It runs the moment you clone it.
 
