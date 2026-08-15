@@ -92,6 +92,38 @@ Live `StockXSource` / `EbaySource` / `LiveExecutor` are stubbed with the honest
 constraints inline. **Live order placement is intentionally not implemented** —
 executing real buys/sells against a funded account is an operator-run action.
 
+## Project layout
+
+```
+config/default.toml     every tunable param (universe, fees, γ/κ, risk caps)
+docs/                   PRD.md, TECHNICAL_DESIGN.md
+
+smm/                    Phase 2 — paper-trading market maker
+  cli.py                `python3 -m smm.cli` — subcommands: run, quote
+  app.py                orchestrator; drives one quote → fill → hedge tick
+  config.py             frozen Config dataclasses loaded from the TOML
+  types.py              SkuSpec, MarketSnapshot, RefPrice, Quote, Hedge, Fill, Position
+  portfolio.py          cash, inventory, realised P&L, round-trips, KPIs
+  engine/pricing.py     AvellanedaStoikovEngine — the closed-form quoting core
+  engine/risk.py        RiskManager — breakers/caps that can veto either side
+  engine/hedging.py     HedgingPolicy — the discrete hedge action H_t
+  execution/router.py   Executor ABC, PaperExecutor (λ(δ) fills), LiveExecutor stub
+
+phase3/                 Phase 3 — additive; imports smm, modifies no Phase-2 file
+  cli.py                `python3 -m phase3.cli` — record, backtest, calibrate, arb-demo
+  recorder.py           record a replayable market-history CSV
+  replay.py             ReplaySource — feeds a recorded CSV in as a MarketDataSource
+  backtest.py           Backtester — reruns the Phase-2 stack over that history
+  calibrate.py          fit_intensity / demo_recovery — fit fill-intensity A, κ
+  arbitrage.py          ArbDetector — cross-platform arbitrage opportunities
+  live_gateway.py       LiveGateway — operator-gated, dry-run-by-default stub
+
+tests/test_pricing.py   Phase-2 tests
+tests/test_phase3.py    Phase-3 tests
+```
+
+`data/` is not tracked — it is created by `phase3.cli record` and is gitignored.
+
 ## Architecture
 
 ```
